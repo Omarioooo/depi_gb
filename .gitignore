@@ -1,0 +1,243 @@
+# ===========================================================================
+# Smart Inventory Management System
+# Keep build output, local secrets, tool state, and machine-specific files
+# out of the repository. Commit the matching *.example files instead.
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# Operating system and editor files
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.stackdump
+*.swp
+*.swo
+*~
+*.orig
+*.rej
+
+.idea/
+.vscode/
+.fleet/
+.history/
+.vs/
+*.iml
+*.sln.iml
+*.code-workspace
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+_ReSharper*/
+*.DotSettings.user
+
+# ---------------------------------------------------------------------------
+# Secrets and local configuration
+# Never commit credentials, tokens, private keys, or real environment files.
+# ---------------------------------------------------------------------------
+.env
+.env.*
+*.env
+!.env.example
+!**/.env.example
+
+secrets.json
+appsettings.*.local.json
+appsettings.Local.json
+*.pfx
+*.p12
+*.jks
+*.keystore
+*.snk
+*.pem
+*.key
+*.ppk
+id_rsa*
+id_ed25519*
+id_ecdsa*
+
+.aws/
+.npmrc
+.pypirc
+
+# Kubernetes secrets: commit only the *.example.yaml templates
+**/secrets.yaml
+**/secret.yaml
+!**/secrets.example.yaml
+!**/secret.example.yaml
+kubeconfig
+*.kubeconfig
+.kube/
+
+# ---------------------------------------------------------------------------
+# .NET / C#
+# ---------------------------------------------------------------------------
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+build/
+out/
+artifacts/
+publish/
+
+.nuget/
+packages/
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+*.pubxml
+*.pubxml.user
+*.VisualState.xml
+TestResult.xml
+*.pidb
+*.svclog
+*.scc
+*.cache
+
+# ---------------------------------------------------------------------------
+# Node.js / React frontend
+# ---------------------------------------------------------------------------
+node_modules/
+dist/
+.vite/
+.cache/
+.parcel-cache/
+.turbo/
+.next/
+.nuxt/
+.svelte-kit/
+.nyc_output/
+*.tsbuildinfo
+.eslintcache
+.stylelintcache
+vite.config.*.timestamp-*
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+.yarn/
+.pnpm-store/
+.pnp.*
+
+playwright-report/
+test-results/
+blob-report/
+
+# ---------------------------------------------------------------------------
+# Logs and temporary files
+# ---------------------------------------------------------------------------
+*.log
+*.log.*
+logs/
+*.pid
+*.pid.lock
+*.seed
+*.tmp
+tmp/
+temp/
+.tmp/
+
+# ---------------------------------------------------------------------------
+# Local database and message-broker data
+# ---------------------------------------------------------------------------
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
+*.sqlite3
+*.mdf
+*.ldf
+*.dump
+*.bak
+*.backup
+*.sql.gz
+pgdata/
+postgres-data/
+rabbitmq-data/
+mnesia/
+
+# ---------------------------------------------------------------------------
+# Docker
+# ---------------------------------------------------------------------------
+.docker/
+docker-compose.override.local.yml
+
+# ---------------------------------------------------------------------------
+# Terraform
+# Commit .terraform.lock.hcl; never commit state, plans, or real tfvars.
+# ---------------------------------------------------------------------------
+.terraform/
+**/.terraform/*
+.terraform.d/
+.terraformrc
+terraform.rc
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+*.tfstate.d/
+*.tfplan
+*.tfplan.*
+plan.out
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+!**/*.tfvars.example
+!*.tfvars.json.example
+!**/*.tfvars.json.example
+
+# ---------------------------------------------------------------------------
+# Ansible
+# ---------------------------------------------------------------------------
+*.retry
+.ansible/
+ansible.log
+
+# ---------------------------------------------------------------------------
+# Kubernetes and Helm
+# ---------------------------------------------------------------------------
+*.rendered.yaml
+*.tgz
+
+# ---------------------------------------------------------------------------
+# Jenkins and CI
+# ---------------------------------------------------------------------------
+.jenkins/
+jenkins_home/
+jenkins.war
+*.hpi
+ci/.credentials
+
+# ---------------------------------------------------------------------------
+# Tests, coverage, and quality reports
+# ---------------------------------------------------------------------------
+TestResults/
+coverage/
+coverage.*
+*.trx
+*.coverage
+*.coveragexml
+lcov.info
+*.received.*
+.scannerwork/
+.sonarqube/
+.trivy/
+trivy-results.*
