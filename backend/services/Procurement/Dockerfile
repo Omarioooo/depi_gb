@@ -1,34 +1,48 @@
 ARG JAVA_VERSION=21
-# Stage 1: Build the application
-FROM eclipse-temurin:${JAVA_VERSION}-jdk AS builder
 
-WORKDIR /app
+# Build stage. The wrapper keeps the container build aligned with the Gradle
+# version committed in this service.
+FROM eclipse-temurin:${JAVA_VERSION}-jdk-jammy AS builder
 
+WORKDIR /workspace
+
+RUN apt-get update \
+    && apt-get install --no-install-recommends --yes curl unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY gradlew settings.gradle.kts build.gradle.kts ./
 COPY gradle/ gradle/
-COPY gradlew build.gradle settings.gradle ./
 
 RUN chmod +x gradlew
-RUN ./gradlew dependencies --no-daemon || true
-COPY src/ src/
-RUN ./gradlew bootJar --no-daemon -x test
 
-# Stage 2: Create the runtime image
-FROM eclipse-temurin:${JAVA_VERSION}-jre
+# Cache dependency resolution separately from application source changes.
+RUN ./gradlew dependencies --no-daemon
+
+COPY src/ src/
+
+RUN ./gradlew clean bootJar --no-daemon -x test \
+    && jar_path="$(find build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*-plain.jar' | head -n 1)" \
+    && test -n "$jar_path" \
+    && cp "$jar_path" /workspace/app.jar
+
+# Runtime stage. It contains only the JRE and the packaged application.
+FROM eclipse-temurin:${JAVA_VERSION}-jre-jammy AS runtime
 
 WORKDIR /app
 
-# Create a non-root user and group for security
-RUN groupadd -r spring && useradd -r -g spring spring
+RUN apt-get update \
+    && apt-get install --no-install-recommends --yes curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system spring \
+    && useradd --system --gid spring --home-dir /app --shell /usr/sbin/nologin spring
 
-# Copy the built jar from the builder stage
-COPY --from=builder --chown=spring:spring /app/build/libs/app.jar app.jar
+COPY --from=builder --chown=spring:spring /workspace/app.jar /app/app.jar
 
 USER spring:spring
+
 EXPOSE 8080
 
-# Add a healthcheck leveraging Spring Boot Actuator
-HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-    CMD wget -q -O - http://127.0.0.1:8080/actuator/health || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl --fail --silent http://127.0.0.1:8080/actuator/health || exit 1
 
-# Run the application
-ENTRYPOINT ["sh", "-c", "exec java -XX:MaxRAMPercentage=75 $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
