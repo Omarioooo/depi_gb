@@ -1,0 +1,73 @@
+@Inventory_HostAddress = http://localhost:5250
+@ProductId = 11111111-1111-1111-1111-111111111111
+
+POST {{Inventory_HostAddress}}/api/inventory/stock-in
+Content-Type: application/json
+Idempotency-Key: stock-in-0001
+
+{
+  "productId": "{{ProductId}}",
+  "location": "A-01",
+  "quantity": 25,
+  "reference": "PO-1001",
+  "performedBy": "staff@depi.local",
+  "reason": null,
+  "threshold": 5
+}
+
+###
+
+POST {{Inventory_HostAddress}}/api/inventory/stock-out
+Content-Type: application/json
+Idempotency-Key: stock-out-0001
+
+{
+  "productId": "{{ProductId}}",
+  "location": "A-01",
+  "quantity": 3,
+  "reference": "SO-2001",
+  "performedBy": "staff@depi.local",
+  "reason": null,
+  "threshold": null
+}
+
+###
+
+POST {{Inventory_HostAddress}}/api/inventory/adjustments
+Content-Type: application/json
+Idempotency-Key: adjustment-0001
+
+{
+  "productId": "{{ProductId}}",
+  "location": "A-01",
+  "quantityDelta": -2,
+  "reason": "Damaged during handling",
+  "reference": "CYCLE-01",
+  "performedBy": "staff@depi.local"
+}
+
+###
+
+POST {{Inventory_HostAddress}}/api/inventory/transfers
+Content-Type: application/json
+Idempotency-Key: transfer-0001
+
+{
+  "productId": "{{ProductId}}",
+  "fromLocation": "A-01",
+  "toLocation": "B-02",
+  "quantity": 5,
+  "reference": "TR-3001",
+  "performedBy": "staff@depi.local",
+  "reason": null
+}
+
+###
+
+GET {{Inventory_HostAddress}}/api/inventory?productId={{ProductId}}&stockStatus=below-threshold&page=1&pageSize=20
+Accept: application/json
+
+###
+
+GET {{Inventory_HostAddress}}/api/inventory/movements?productId={{ProductId}}&page=1&pageSize=20
+Accept: application/json
