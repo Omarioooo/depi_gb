@@ -6,7 +6,7 @@ one database per service, a single API gateway, RabbitMQ events, a React dashboa
 and the required DevOps pipeline.
 
 Stack: **.NET 10 / ASP.NET Core**, **React + TypeScript + Vite**, **PostgreSQL**,
-**RabbitMQ**, **Keycloak**, **YARP**, **Nginx Ingress**, **Docker**,
+**RabbitMQ**, **ASP.NET Core Identity**, **YARP**, **Nginx Ingress**, **Docker**,
 **Kubernetes**, **Jenkins**, **Terraform**, **Ansible**, **Prometheus + Grafana**.
 
 > `bin/`, `obj/`, `node_modules/`, and `dist/` are build output and are not shown.
@@ -55,7 +55,7 @@ depi_gb/
 ├── README.md                    # Quick start and service map
 ├── .gitignore                   # Build output, secrets, local state
 ├── .env.example                 # Local ports and placeholder secrets
-├── docker-compose.yml           # Local stack: services, Postgres, RabbitMQ, Keycloak
+├── docker-compose.yml           # Local stack: services, Postgres, RabbitMQ, identity
 ├── Jenkinsfile                  # Build, test, image, push, deploy pipeline
 ├── documentation/               # Project brief, requirements, architecture, this file
 ├── backend/                     # .NET gateway, services, shared contracts, tests
@@ -65,7 +65,7 @@ depi_gb/
 ├── infra/
 │   ├── terraform/               # AWS VPC, EC2, S3
 │   ├── ansible/                 # Server and cluster configuration
-│   ├── keycloak/                # Realm and role definitions
+│   ├── identity/                # ASP.NET Core Identity configuration and roles
 │   ├── postgres/                # Local database bootstrap
 │   └── monitoring/              # Prometheus and Grafana configuration
 └── scripts/                     # Local development and deployment helpers
@@ -140,7 +140,7 @@ backend/gateway/DepiGb.Gateway/
 ```
 
 The gateway routes by path (`/api/products`, `/api/inventory`, …), validates the
-Keycloak JWT, and forwards the correlation ID. It contains no business logic.
+application's bearer token, and forwards the correlation ID. It contains no business logic.
 
 ### 4.4 Shared project
 
@@ -184,7 +184,7 @@ frontend/
     ├── main.tsx                 # React bootstrap
     ├── App.tsx                  # Providers and router
     ├── api.ts                   # Fetch wrapper and all API calls
-    ├── auth.tsx                 # Keycloak OIDC login, roles, protected routes
+    ├── auth.tsx                 # Identity-backed login, roles, protected routes
     ├── pages/
     │   ├── Dashboard.tsx        # Inventory summary and active alerts
     │   ├── Products.tsx         # Search, filter, create, edit, deactivate
@@ -206,10 +206,10 @@ frontend/
 deploy/k8s/
 ├── namespace.yaml               # depi-gb namespace
 ├── config.yaml                  # ConfigMap: service URLs, log level, thresholds
-├── secrets.example.yaml         # Secret template: DB, JWT, RabbitMQ, Keycloak
+├── secrets.example.yaml         # Secret template: DB, JWT, RabbitMQ
 ├── postgres.yaml                # PostgreSQL StatefulSet, Service, init SQL
 ├── rabbitmq.yaml                # RabbitMQ StatefulSet and Service
-├── keycloak.yaml                # Keycloak Deployment, Service, realm import
+├── identity.yaml                # Identity service configuration if deployed separately
 ├── services.yaml                # Six service Deployments and Services (multi-doc)
 ├── gateway.yaml                 # Gateway Deployment and Service
 ├── frontend.yaml                # Dashboard Deployment and Service
@@ -266,8 +266,8 @@ they grow.
 
 ```text
 infra/
-├── keycloak/
-│   └── realm.json               # Realm, OIDC clients, Manager/Staff/Admin roles
+├── identity/
+│   └── roles.json               # Manager/Staff/Admin role seed/configuration
 ├── postgres/
 │   └── init.sql                 # Creates one database and role per service (local stack)
 └── monitoring/
@@ -325,7 +325,7 @@ API references, ADRs, and runbooks can be added once the implementation stabiliz
 | Purchase orders and receipts | Procurement | `procurement_db` | `GoodsReceived` | — |
 | Alerts and delivery attempts | Notification | `notification_db` | — | `StockChanged` |
 | Report read models | Reporting | `reporting_db` | — | `StockChanged`, `GoodsReceived` |
-| Users and roles | Keycloak | Keycloak DB | — | — |
+| Users and roles | ASP.NET Core Identity | Identity database | — | — |
 
 No cross-database foreign keys. Product and supplier IDs are opaque references.
 

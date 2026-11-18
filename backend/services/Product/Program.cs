@@ -1,41 +1,43 @@
+using Microsoft.EntityFrameworkCore;
+using Product;
+using Product.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddHealthChecks();
+builder.Services.AddScoped<CreateProductService>();
+builder.Services.AddScoped<ListProductsService>();
+builder.Services.AddScoped<GetProductService>();
+builder.Services.AddScoped<UpdateProductService>();
+builder.Services.AddScoped<DeactivateProductService>();
+
+var connectionString = builder.Configuration.GetConnectionString("Products")
+    ?? builder.Configuration["PRODUCT_DB_CONNECTION"];
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
+        "Configure ConnectionStrings:Products or PRODUCT_DB_CONNECTION for the Product service.");
+}
+
+builder.Services.AddDbContext<ProductDbContext>(options => options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+app.MapHealthChecks("/health");
+app.MapProductEndpoints();
 
-var summaries = new[]
+// Temporary bootstrap until the first EF migration is added to this service.
+await using (var scope = app.Services.CreateAsyncScope())
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    var db = scope.ServiceProvider.GetRequiredService<ProductDbContext>();
+    await db.Database.EnsureCreatedAsync();
+}
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
