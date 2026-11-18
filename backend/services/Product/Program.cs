@@ -33,11 +33,10 @@ if (app.Environment.IsDevelopment())
 app.MapHealthChecks("/health");
 app.MapProductEndpoints();
 
-// Temporary bootstrap until the first EF migration is added to this service.
 await using (var scope = app.Services.CreateAsyncScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ProductDbContext>();
-    await db.Database.EnsureCreatedAsync();
+    await db.Database.MigrateAsync();
 }
 
 app.Run();
