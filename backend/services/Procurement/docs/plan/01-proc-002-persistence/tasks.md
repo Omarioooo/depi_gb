@@ -69,4 +69,4 @@
 - [x] `./gradlew clean build` passes.
 - [x] Schema matches [`schema.md`](./schema.md).
 - [x] No API or use case code leaked into this sprint.
-- [ ] Diff reviewed and accepted.
+- [x] Diff reviewed and accepted.
