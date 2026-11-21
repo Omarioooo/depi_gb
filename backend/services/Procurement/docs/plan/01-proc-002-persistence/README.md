@@ -1,6 +1,6 @@
 # Sprint 01 — PROC-002: Persistence and Schema
 
-**Status:** review
+**Status:** done
 **Phase:** Foundation
 **Depends on:** PROC-001
 **Unblocks:** every later sprint

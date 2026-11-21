@@ -23,7 +23,7 @@ Each slice must leave the repository buildable. A later slice may extend an earl
 | ID | Feature | Phase | Status |
 |---|---|---|---|
 | PROC-001 | Service foundation | Foundation | done |
-| PROC-002 | Persistence and schema | Foundation | review |
+| PROC-002 | Persistence and schema | Foundation | done |
 | PROC-003 | Gateway authorization boundary | Foundation | planned |
 | PROC-004 | Draft purchase orders | Slice 1 | planned |
 | PROC-005 | Purchase order lifecycle | Slice 2 | planned |
@@ -51,7 +51,7 @@ Review evidence:
 3. Health endpoint response
 4. Docker image build output
 
-### PROC-002. Persistence and schema · review
+### PROC-002. Persistence and schema · done
 
 Create the Procurement database model and migration baseline for purchase orders, lines, receipts, and event publication records.
 

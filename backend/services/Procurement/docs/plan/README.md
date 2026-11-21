@@ -13,7 +13,7 @@ evidence template. The current sprint also gets a detailed runbook.
 | # | Sprint | PROC | Status | Depends on |
 |---|---|---|---|---|
 | — | [Foundation closeout](./proc-001-evidence.md) | PROC-001 | done | — |
-| 01 | [Persistence and schema](./01-proc-002-persistence/README.md) | PROC-002 | review | PROC-001 |
+| 01 | [Persistence and schema](./01-proc-002-persistence/README.md) | PROC-002 | done | PROC-001 |
 | 02 | [Authorization boundary](./02-proc-003-authorization/README.md) | PROC-003 | planned | PROC-001 |
 | 03 | [Draft purchase orders](./03-proc-004-draft-orders/README.md) | PROC-004 | planned | PROC-002, PROC-003 |
 | 04 | [Purchase order lifecycle](./04-proc-005-lifecycle/README.md) | PROC-005 | planned | PROC-004 |
