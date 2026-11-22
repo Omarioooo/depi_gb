@@ -26,6 +26,13 @@ spring:
 server:
   port: ${SERVER_PORT:8080}
   shutdown: graceful
+  error:
+    include-message: never
+    include-stacktrace: never
+
+logging:
+  pattern:
+    level: "%5p [correlationId:%X{correlationId:-}]"
 
 management:
   endpoints:

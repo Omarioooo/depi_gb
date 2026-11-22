@@ -75,6 +75,58 @@ curl http://localhost:8080/actuator/health/readiness
 curl http://localhost:8080/api/procurement/status
 ```
 
+## Gateway authorization
+
+Procurement does not authenticate users. The API gateway authenticates the
+caller and forwards three trusted headers:
+
+| Header | Required | Meaning |
+|---|---|---|
+| `X-User-Id` | yes | Stable user identifier (UUID or subject) |
+| `X-User-Roles` | yes | Comma-separated roles: `MANAGER`, `STAFF`, `SYSTEM_ADMIN` |
+| `X-Correlation-Id` | no | Correlation identifier; generated when absent and always echoed |
+
+Only these endpoints are reachable without identity headers:
+
+- `/actuator/health/**`
+- `/actuator/info`
+- `/api/procurement/status`
+
+Every other path is protected. The service rejects a missing or blank
+`X-User-Id`, a missing role list, duplicate identity headers, and unknown roles
+that leave no recognized role. Roles are trimmed, compared case-insensitively,
+and unknown names are ignored. `SYSTEM_ADMIN` is recognized but has no
+procurement business access by default.
+
+| Operation | MANAGER | STAFF | SYSTEM_ADMIN |
+|---|---|---|---|
+| Create / edit draft | yes | no | no |
+| Read orders and receipts | yes | yes | no |
+| Submit order | yes | yes | no |
+| Approve / cancel order | yes | no | no |
+| Record / retry receipt | yes | yes | no |
+
+Authorization failures return `403` with an RFC 7807 `ProblemDetail`:
+
+```json
+{
+  "type": "https://depigb.example/problems/access-denied",
+  "title": "Forbidden",
+  "status": 403,
+  "detail": "Access denied.",
+  "instance": "/api/v1/procurement/purchase-orders",
+  "code": "ACCESS_DENIED"
+}
+```
+
+The response never contains the user ID, role list, stack trace, or internal
+class names. Controllers and use cases call
+`AuthorizationRules.require(UserContext, Operation)` before performing work;
+later sprints add the business endpoints that use it.
+
+> Header trust is a deployment property. The service must only be reachable
+> through the gateway or from the internal network.
+
 ## Docker
 
 ```bash
