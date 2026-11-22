@@ -24,7 +24,7 @@ Each slice must leave the repository buildable. A later slice may extend an earl
 |---|---|---|---|
 | PROC-001 | Service foundation | Foundation | done |
 | PROC-002 | Persistence and schema | Foundation | done |
-| PROC-003 | Gateway authorization boundary | Foundation | planned |
+| PROC-003 | Gateway authorization boundary | Foundation | done |
 | PROC-004 | Draft purchase orders | Slice 1 | planned |
 | PROC-005 | Purchase order lifecycle | Slice 2 | planned |
 | PROC-006 | Supplier and product validation | Slice 3 | planned |
@@ -72,7 +72,7 @@ Review evidence:
 2. Database schema inspection
 3. Constraint tests
 
-### PROC-003. Gateway authorization boundary
+### PROC-003. Gateway authorization boundary · done
 
 Add the local authorization boundary that consumes trusted gateway headers without implementing authentication inside Procurement.
 
