@@ -248,3 +248,4 @@ trivy-results.*
 .opencode
 .opencode/*
 AGENTS.md
+.freebuff/

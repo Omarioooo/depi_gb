@@ -6,7 +6,7 @@ one database per service, a single API gateway, RabbitMQ events, a React dashboa
 and the required DevOps pipeline.
 
 Stack: **.NET 10 / ASP.NET Core**, **React + TypeScript + Vite**, **PostgreSQL**,
-**RabbitMQ**, **Keycloak**, **YARP**, **Nginx Ingress**, **Docker**,
+**RabbitMQ**, **ASP.NET Core Identity**, **YARP**, **Nginx Ingress**, **Docker**,
 **Kubernetes**, **Jenkins**, **Terraform**, **Ansible**, **Prometheus + Grafana**.
 
 > `bin/`, `obj/`, `node_modules/`, and `dist/` are build output and are not shown.
@@ -267,7 +267,7 @@ they grow.
 ```text
 infra/
 ├── keycloak/
-│   └── realm.json               # Realm, OIDC clients, manager/staff/system_administrator roles
+│   └── realm.json               # Realm, OIDC clients, Manager/Staff/Admin roles
 ├── postgres/
 │   └── init.sql                 # Creates one database and role per service (local stack)
 └── monitoring/
