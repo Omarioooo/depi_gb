@@ -1,0 +1,105 @@
+name: inventory
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: inventory-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${SQLSERVER_SA_PASSWORD:?set SQLSERVER_SA_PASSWORD in .env}
+    ports:
+      - "${SQLSERVER_HOST_PORT:?set SQLSERVER_HOST_PORT in .env}:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -b -Q "SELECT 1"
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 40s
+    restart: unless-stopped
+
+  # One shot: creates the three databases, then exits.
+  sqlserver-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: inventory-sqlserver-init
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      SQLCMDPASSWORD: ${SQLSERVER_SA_PASSWORD:?set SQLSERVER_SA_PASSWORD in .env}
+    command:
+      - /opt/mssql-tools18/bin/sqlcmd
+      - -S
+      - sqlserver
+      - -U
+      - sa
+      - -b
+      - -C
+      - -i
+      - /scripts/init-databases.sql
+      - -v
+      - AuthDb=${AUTH_DB_NAME:?set AUTH_DB_NAME in .env}
+      - -v
+      - KeycloakDb=${KEYCLOAK_DB_NAME:?set KEYCLOAK_DB_NAME in .env}
+      - -v
+      - InventoryDb=${INVENTORY_DB_NAME:?set INVENTORY_DB_NAME in .env}
+    volumes:
+      - ./docker/sql/init-databases.sql:/scripts/init-databases.sql:ro
+    restart: "no"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.2
+    container_name: inventory-keycloak
+    command: ["start"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:?set KEYCLOAK_ADMIN_USERNAME in .env}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?set KEYCLOAK_ADMIN_PASSWORD in .env}
+      KC_DB: mssql
+      KC_DB_URL: "jdbc:sqlserver://sqlserver:1433;databaseName=${KEYCLOAK_DB_NAME:?set KEYCLOAK_DB_NAME in .env};encrypt=true;trustServerCertificate=true"
+      KC_DB_USERNAME: sa
+      KC_DB_PASSWORD: ${SQLSERVER_SA_PASSWORD:?set SQLSERVER_SA_PASSWORD in .env}
+      KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL:?set KEYCLOAK_PUBLIC_URL in .env}
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+    ports:
+      - "${KEYCLOAK_HOST_PORT:?set KEYCLOAK_HOST_PORT in .env}:8080"
+      - "${KEYCLOAK_MANAGEMENT_HOST_PORT:?set KEYCLOAK_MANAGEMENT_HOST_PORT in .env}:9000"
+    depends_on:
+      sqlserver-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  auth-service:
+    build:
+      context: ./backend/services/KeycloakAuthService
+      dockerfile: Dockerfile
+    container_name: inventory-auth-service
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__AuthDb: "Server=sqlserver,1433;Database=${AUTH_DB_NAME:?set AUTH_DB_NAME in .env};User Id=sa;Password=\"${SQLSERVER_SA_PASSWORD:?set SQLSERVER_SA_PASSWORD in .env}\";TrustServerCertificate=True;Encrypt=False"
+      Keycloak__BaseUrl: ${KEYCLOAK_INTERNAL_URL:?set KEYCLOAK_INTERNAL_URL in .env}
+      Keycloak__Realm: ${KEYCLOAK_REALM:?set KEYCLOAK_REALM in .env}
+      Keycloak__ClientId: ${KEYCLOAK_CLIENT_ID:?set KEYCLOAK_CLIENT_ID in .env}
+      Keycloak__ClientSecret: ${KEYCLOAK_CLIENT_SECRET:?set KEYCLOAK_CLIENT_SECRET in .env}
+      Keycloak__AdminClientId: ${KEYCLOAK_ADMIN_CLIENT_ID:?set KEYCLOAK_ADMIN_CLIENT_ID in .env}
+      Keycloak__AdminClientSecret: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?set KEYCLOAK_ADMIN_CLIENT_SECRET in .env}
+      Keycloak__Audience: ${KEYCLOAK_AUDIENCE:?set KEYCLOAK_AUDIENCE in .env}
+      Keycloak__Issuer: "${KEYCLOAK_PUBLIC_URL:?set KEYCLOAK_PUBLIC_URL in .env}/realms/${KEYCLOAK_REALM:?set KEYCLOAK_REALM in .env}"
+    ports:
+      - "${AUTH_SERVICE_HOST_PORT:?set AUTH_SERVICE_HOST_PORT in .env}:8080"
+    depends_on:
+      sqlserver-init:
+        condition: service_completed_successfully
+      keycloak:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  sqlserver-data:
