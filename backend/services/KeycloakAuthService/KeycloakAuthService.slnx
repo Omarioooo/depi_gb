@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="KeycloakAuthService.API/KeycloakAuthService.API.csproj" />
+  <Project Path="KeycloakAuthService.Application/KeycloakAuthService.Application.csproj" />
+  <Project Path="KeycloakAuthService.Domain/KeycloakAuthService.Domain.csproj" />
+  <Project Path="KeycloakAuthService.Infrastructure/KeycloakAuthService.Infrastructure.csproj" />
+  <Project Path="KeycloakAuthService.Tests/KeycloakAuthService.Tests.csproj" />
+</Solution>

@@ -1,0 +1,74 @@
+@KeycloakAuthService.API_HostAddress = http://localhost:5080
+
+### Register a new user
+POST {{KeycloakAuthService.API_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "jane.doe",
+  "email": "jane.doe@example.com",
+  "password": "ChangeMe_123!",
+  "firstName": "Jane",
+  "lastName": "Doe"
+}
+
+### Login
+POST {{KeycloakAuthService.API_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "jane.doe",
+  "password": "ChangeMe_123!"
+}
+
+### Current profile
+GET {{KeycloakAuthService.API_HostAddress}}/api/auth/me
+Authorization: Bearer {{access_token}}
+
+### Refresh token
+POST {{KeycloakAuthService.API_HostAddress}}/api/auth/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refresh_token}}"
+}
+
+### Change password
+PUT {{KeycloakAuthService.API_HostAddress}}/api/password/change
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "currentPassword": "ChangeMe_123!",
+  "newPassword": "ChangeMe_456!"
+}
+
+### Logout
+POST {{KeycloakAuthService.API_HostAddress}}/api/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refresh_token}}"
+}
+
+### List users (system_administrator only)
+GET {{KeycloakAuthService.API_HostAddress}}/api/admin/users?page=1&pageSize=10
+Authorization: Bearer {{access_token}}
+
+### List roles (system_administrator only)
+GET {{KeycloakAuthService.API_HostAddress}}/api/roles
+Authorization: Bearer {{access_token}}
+
+### Create a role (system_administrator only)
+POST {{KeycloakAuthService.API_HostAddress}}/api/roles
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "name": "Warehouse Clerk",
+  "description": "Handles stock movements"
+}
+
+### Assign a role to a user (system_administrator only)
+POST {{KeycloakAuthService.API_HostAddress}}/api/users/{{user_id}}/roles/Warehouse%20Clerk
+Authorization: Bearer {{access_token}}
