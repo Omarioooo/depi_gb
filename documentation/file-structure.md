@@ -267,7 +267,7 @@ they grow.
 ```text
 infra/
 ├── keycloak/
-│   └── realm.json               # Realm, OIDC clients, Manager/Staff/Admin roles
+│   └── realm.json               # Realm, OIDC clients, manager/staff/system_administrator roles
 ├── postgres/
 │   └── init.sql                 # Creates one database and role per service (local stack)
 └── monitoring/
